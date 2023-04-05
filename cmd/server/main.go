@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/kevinrudde/gophercraft/internal/packet"
 	"github.com/kevinrudde/gophercraft/internal/util"
 	"log"
 	"net"
@@ -11,14 +12,14 @@ type Server struct {
 	listenAddr string
 	listener   net.Listener
 	quitCh     chan struct{}
-	msgCh      chan []byte
+	msgCh      chan *packet.RawPacket
 }
 
 func NewServer(listenAddr string) *Server {
 	return &Server{
 		listenAddr: listenAddr,
 		quitCh:     make(chan struct{}),
-		msgCh:      make(chan []byte, 10),
+		msgCh:      make(chan *packet.RawPacket, 10),
 	}
 }
 
@@ -56,28 +57,39 @@ func (s *Server) readLoop(conn net.Conn) {
 	defer conn.Close()
 	buf := make([]byte, 2048)
 	for {
-		n, err := conn.Read(buf)
+		length, err := conn.Read(buf)
 		if err != nil {
-			fmt.Println("read error:", err)
+			fmt.Println("error:", err)
+			break
+		}
+
+		msg := buf[:length]
+
+		packetLength, n, err := util.ReadVarInt(msg)
+		packetId, m, err := util.ReadVarInt(msg[n:])
+
+		if int(packetLength)-m <= 0 {
 			continue
 		}
 
-		s.msgCh <- buf[:n]
+		s.msgCh <- &packet.RawPacket{
+			Length:   length,
+			PacketId: packetId,
+			Data:     msg[n+m:],
+		}
+	}
+}
+
+func (s *Server) ProcessRawPackets() {
+	for rawPacket := range s.msgCh {
+		packet.ReadPacket(rawPacket)
 	}
 }
 
 func main() {
 	server := NewServer(":25565")
+	go server.ProcessRawPackets()
 	fmt.Println("Listening on :25565")
-
-	go func() {
-		for msg := range server.msgCh {
-			length, n := util.VarInt(msg)
-			packetId, n := util.VarInt(msg[:n])
-			fmt.Println("packet length:", length)
-			fmt.Println("packet id:", packetId)
-		}
-	}()
 
 	log.Fatal(server.Start())
 }
