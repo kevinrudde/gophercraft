@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/kevinrudde/gophercraft/internal/packet"
+	"github.com/kevinrudde/gophercraft/internal/network/packet"
+	packets "github.com/kevinrudde/gophercraft/internal/network/packets/client/handshake"
 	"github.com/kevinrudde/gophercraft/internal/util"
 	"log"
 	"net"
@@ -73,16 +74,33 @@ func (s *Server) readLoop(conn net.Conn) {
 		}
 
 		s.msgCh <- &packet.RawPacket{
-			Length:   length,
-			PacketId: packetId,
-			Data:     msg[n+m:],
+			DataLength: length - (n + m),
+			Length:     length,
+			PacketId:   packetId,
+			Data:       msg[n+m:],
 		}
 	}
 }
 
 func (s *Server) ProcessRawPackets() {
 	for rawPacket := range s.msgCh {
-		packet.ReadPacket(rawPacket)
+		reader := packet.NewReader(rawPacket)
+
+		// TODO: make this more magic
+		var receivedPacket packets.HandshakePacket
+
+		switch rawPacket.PacketId {
+		case 0:
+			receivedPacket = packets.HandshakePacket{}
+			err := receivedPacket.From(reader)
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
+			fmt.Println(receivedPacket)
+
+			break
+		}
 	}
 }
 
