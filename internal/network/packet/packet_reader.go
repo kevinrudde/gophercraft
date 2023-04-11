@@ -65,3 +65,19 @@ func (r *Reader) Int16() (int16, error) {
 
 	return int16(value), nil
 }
+
+func (r *Reader) Int32() (int32, error) {
+	buf := r.RawPacket.Data[r.ReadIndex : r.ReadIndex+4]
+	value := binary.BigEndian.Uint32(buf)
+	r.ReadIndex += 2
+
+	return int32(value), nil
+}
+
+func (r *Reader) Int64() (int64, error) {
+	buf := r.RawPacket.Data[r.ReadIndex : r.ReadIndex+4]
+	value := binary.BigEndian.Uint64(buf)
+	r.ReadIndex += 2
+
+	return int64(value), nil
+}

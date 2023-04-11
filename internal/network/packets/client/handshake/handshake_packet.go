@@ -1,4 +1,4 @@
-package packets
+package handshakepackets
 
 import (
 	"github.com/kevinrudde/gophercraft/internal/network/packet"

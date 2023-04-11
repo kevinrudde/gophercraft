@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/kevinrudde/gophercraft/internal/network"
 	"github.com/kevinrudde/gophercraft/internal/network/packet"
 	packets "github.com/kevinrudde/gophercraft/internal/network/packets/client/handshake"
+	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
 	"github.com/kevinrudde/gophercraft/internal/util"
 	"log"
 	"net"
@@ -49,6 +51,11 @@ func (s *Server) acceptLoop() {
 		}
 
 		fmt.Println("New connection from:", conn.RemoteAddr().String())
+		playerConnection := networkplayer.PlayerConnection{
+			Conn:            conn,
+			ConnectionState: network.Unknown,
+		}
+		networkplayer.PlayerConnections[playerConnection] = struct{}{}
 
 		go s.readLoop(conn)
 	}
