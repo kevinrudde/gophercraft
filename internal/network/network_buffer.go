@@ -1,13 +1,13 @@
 package network
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
-	"fmt"
 )
 
 type Buffer struct {
-	buf        []byte
+	buf        *bytes.Buffer
 	ReadIndex  int
 	WriteIndex int
 }
@@ -19,7 +19,7 @@ const (
 
 func CreateBufferWithBuf(buf []byte) Buffer {
 	return Buffer{
-		buf:        buf,
+		buf:        bytes.NewBuffer(buf),
 		ReadIndex:  0,
 		WriteIndex: 0,
 	}
@@ -27,14 +27,15 @@ func CreateBufferWithBuf(buf []byte) Buffer {
 
 func CreateBuffer() Buffer {
 	return Buffer{
-		buf:        make([]byte, 0),
+		buf:        new(bytes.Buffer),
 		ReadIndex:  0,
 		WriteIndex: 0,
 	}
 }
 
 func (b *Buffer) ReadBool() (bool, error) {
-	data, err := b.readBytes(1)
+	var data [1]byte
+	_, err := b.buf.Read(data[:1])
 	if err != nil {
 		return false, err
 	}
@@ -47,14 +48,15 @@ func (b *Buffer) ReadBool() (bool, error) {
 
 func (b *Buffer) WriteBool(value bool) {
 	if value {
-		b.writeByte(0x01)
+		b.buf.WriteByte(0x01)
 	} else {
-		b.writeByte(0x00)
+		b.buf.WriteByte(0x00)
 	}
 }
 
 func (b *Buffer) ReadByte() (byte, error) {
-	data, err := b.readBytes(1)
+	var data [1]byte
+	_, err := b.buf.Read(data[:1])
 	if err != nil {
 		return 0, err
 	}
@@ -62,67 +64,72 @@ func (b *Buffer) ReadByte() (byte, error) {
 	return data[0], nil
 }
 
-func (b *Buffer) WriteByte(value byte) {
-	b.writeByte(value)
+func (b *Buffer) WriteByte(value byte) error {
+	return b.buf.WriteByte(value)
 }
 
 func (b *Buffer) ReadInt16() (int16, error) {
-	data, err := b.readBytes(4)
+	var data [2]byte
+	_, err := b.buf.Read(data[:2])
 	if err != nil {
 		return 0, err
 	}
-	value := binary.BigEndian.Uint16(data)
+	value := binary.BigEndian.Uint16(data[:2])
 
 	return int16(value), nil
 }
 
 func (b *Buffer) WriteInt16(value int16) {
-	buf := make([]byte, 1)
-	binary.BigEndian.PutUint16(buf, uint16(value))
-	fmt.Println(buf)
-	b.writeBytes(buf)
-
-	//b.buf = binary.BigEndian.AppendUint16(b.buf, uint16(value))
+	var buf [2]byte
+	binary.BigEndian.PutUint16(buf[:2], uint16(value))
+	b.buf.Write(buf[:2])
 }
 
 func (b *Buffer) ReadUInt16() (uint16, error) {
-	data, err := b.readBytes(4)
+	var data [2]byte
+	_, err := b.buf.Read(data[:2])
 	if err != nil {
 		return 0, err
 	}
-	return binary.BigEndian.Uint16(data), nil
+	value := binary.BigEndian.Uint16(data[:2])
+
+	return value, nil
 }
 
-func (b *Buffer) WriteUInt16(value uint16) {
-	b.buf = binary.BigEndian.AppendUint16(b.buf, value)
+func (b *Buffer) WriteUInt16(value uint16) error {
+	var buf [2]byte
+	binary.BigEndian.PutUint16(buf[:2], value)
+	_, err := b.buf.Write(buf[:2])
+	return err
 }
 
 func (b *Buffer) ReadInt32() (int32, error) {
-	data, err := b.readBytes(4)
+	var data [4]byte
+	_, err := b.buf.Read(data[:4])
 	if err != nil {
 		return 0, err
 	}
-	value := binary.BigEndian.Uint32(data)
+	value := binary.BigEndian.Uint32(data[:4])
 
 	return int32(value), nil
 }
 
-func (b *Buffer) WriteInt32(value uint32) {
-	b.buf = binary.BigEndian.AppendUint32(b.buf, value)
+func (b *Buffer) WriteInt32(value int32) error {
+	var buf [4]byte
+	binary.BigEndian.PutUint32(buf[:4], uint32(value))
+	_, err := b.buf.Write(buf[:4])
+	return err
 }
 
 func (b *Buffer) ReadInt64() (int64, error) {
-	data, err := b.readBytes(4)
+	var data [8]byte
+	_, err := b.buf.Read(data[:8])
 	if err != nil {
 		return 0, err
 	}
-	value := binary.BigEndian.Uint64(data)
+	value := binary.BigEndian.Uint64(data[:8])
 
 	return int64(value), nil
-}
-
-func (b *Buffer) WriteUInt32(value uint32) {
-	b.buf = binary.BigEndian.AppendUint32(b.buf, value)
 }
 
 func (b *Buffer) ReadString() (string, error) {
@@ -130,7 +137,8 @@ func (b *Buffer) ReadString() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	data, err := b.readBytes(length)
+	data := make([]byte, length)
+	_, err = b.buf.Read(data)
 	if err != nil {
 		return "", err
 	}
@@ -140,20 +148,18 @@ func (b *Buffer) ReadString() (string, error) {
 func (b *Buffer) WriteString(value string) {
 	length := len(value)
 	b.WriteVarInt(length)
-	b.writeBytes([]byte(value))
+	b.buf.Write([]byte(value))
 }
 
 func (b *Buffer) ReadVarInt() (int, error) {
 	var value int = 0
 	var position int = 0
-	var currentByte byte
 
 	for {
-		data, err := b.readBytes(1)
+		currentByte, err := b.buf.ReadByte()
 		if err != nil {
 			return 0, err
 		}
-		currentByte = data[0]
 
 		value |= int(currentByte&SegmentBits) << position
 
@@ -173,28 +179,10 @@ func (b *Buffer) ReadVarInt() (int, error) {
 func (b *Buffer) WriteVarInt(value int) {
 	for {
 		if value & ^SegmentBits == 0 {
-			b.writeByte(byte(value))
+			b.buf.WriteByte(byte(value))
 			return
 		}
-		b.writeByte(byte(value&SegmentBits | ContinueBit))
+		b.buf.WriteByte(byte(value&SegmentBits | ContinueBit))
 		value >>= 7
 	}
-}
-
-func (b *Buffer) readBytes(count int) ([]byte, error) {
-	if len(b.buf) > b.ReadIndex+count {
-		return nil, errors.New("buffer read is out of bounds")
-	}
-	b.ReadIndex += count
-	return b.buf[b.ReadIndex-1 : b.ReadIndex+count-1], nil
-}
-
-func (b *Buffer) writeByte(data byte) {
-	b.buf = append(b.buf, data)
-	b.WriteIndex += 1
-}
-
-func (b *Buffer) writeBytes(data []byte) {
-	b.buf = append(b.buf, data...)
-	b.WriteIndex += len(data)
 }
