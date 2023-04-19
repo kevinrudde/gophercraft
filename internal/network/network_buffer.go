@@ -7,9 +7,7 @@ import (
 )
 
 type Buffer struct {
-	buf        *bytes.Buffer
-	ReadIndex  int
-	WriteIndex int
+	buf *bytes.Buffer
 }
 
 const (
@@ -19,17 +17,13 @@ const (
 
 func CreateBufferWithBuf(buf []byte) Buffer {
 	return Buffer{
-		buf:        bytes.NewBuffer(buf),
-		ReadIndex:  0,
-		WriteIndex: 0,
+		buf: bytes.NewBuffer(buf),
 	}
 }
 
 func CreateBuffer() Buffer {
 	return Buffer{
-		buf:        new(bytes.Buffer),
-		ReadIndex:  0,
-		WriteIndex: 0,
+		buf: new(bytes.Buffer),
 	}
 }
 
