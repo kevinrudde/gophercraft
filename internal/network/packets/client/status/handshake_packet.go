@@ -1,7 +1,7 @@
-package handshakepackets
+package status
 
 import (
-	"github.com/kevinrudde/gophercraft/internal/network/packet"
+	"github.com/kevinrudde/gophercraft/internal/network"
 )
 
 type HandshakePacket struct {
@@ -11,25 +11,25 @@ type HandshakePacket struct {
 	NextState       int
 }
 
-func (p *HandshakePacket) From(reader packet.Reader) error {
+func (p *HandshakePacket) From(buffer network.Buffer) error {
 	var err error
 
-	p.ProtocolVersion, err = reader.VarInt()
+	p.ProtocolVersion, err = buffer.ReadVarInt()
 	if err != nil {
 		return err
 	}
 
-	p.ServerAddress, err = reader.String()
+	p.ServerAddress, err = buffer.ReadString()
 	if err != nil {
 		return err
 	}
 
-	p.ServerPort, err = reader.Int16()
+	p.ServerPort, err = buffer.ReadInt16()
 	if err != nil {
 		return err
 	}
 
-	p.NextState, err = reader.VarInt()
+	p.NextState, err = buffer.ReadVarInt()
 	if err != nil {
 		return err
 	}

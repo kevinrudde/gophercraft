@@ -27,6 +27,10 @@ func CreateBuffer() Buffer {
 	}
 }
 
+func (b *Buffer) Bytes() []byte {
+	return b.buf.Bytes()
+}
+
 func (b *Buffer) ReadBool() (bool, error) {
 	var data [1]byte
 	_, err := b.buf.Read(data[:1])

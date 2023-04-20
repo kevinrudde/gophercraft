@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"github.com/kevinrudde/gophercraft/internal/network"
 	"github.com/kevinrudde/gophercraft/internal/network/packet"
-	packets "github.com/kevinrudde/gophercraft/internal/network/packets/client/handshake"
+	"github.com/kevinrudde/gophercraft/internal/network/packets/client"
 	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
-	"github.com/kevinrudde/gophercraft/internal/util"
 	"log"
 	"net"
 )
@@ -53,15 +52,15 @@ func (s *Server) acceptLoop() {
 		fmt.Println("New connection from:", conn.RemoteAddr().String())
 		playerConnection := networkplayer.PlayerConnection{
 			Conn:            conn,
-			ConnectionState: network.Unknown,
+			ConnectionState: network.Status,
 		}
 		networkplayer.PlayerConnections[playerConnection] = struct{}{}
 
-		go s.readLoop(conn)
+		go s.readLoop(conn, playerConnection)
 	}
 }
 
-func (s *Server) readLoop(conn net.Conn) {
+func (s *Server) readLoop(conn net.Conn, connection networkplayer.PlayerConnection) {
 	defer conn.Close()
 	buf := make([]byte, 2048)
 	for {
@@ -73,47 +72,29 @@ func (s *Server) readLoop(conn net.Conn) {
 
 		msg := buf[:length]
 
-		packetLength, n, err := util.ReadVarInt(msg)
-		packetId, m, err := util.ReadVarInt(msg[n:])
-
-		if int(packetLength)-m <= 0 {
+		buffer := network.CreateBufferWithBuf(msg)
+		packetLength, err := buffer.ReadVarInt()
+		if err != nil {
+			continue
+		}
+		packetId, err := buffer.ReadVarInt()
+		if err != nil {
 			continue
 		}
 
-		s.msgCh <- &packet.RawPacket{
-			DataLength: length - (n + m),
-			Length:     length,
-			PacketId:   packetId,
-			Data:       msg[n+m:],
+		if packetLength < 0 {
+			continue
 		}
-	}
-}
 
-func (s *Server) ProcessRawPackets() {
-	for rawPacket := range s.msgCh {
-		reader := packet.NewReader(rawPacket)
-
-		// TODO: make this more magic
-		var receivedPacket packets.HandshakePacket
-
-		switch rawPacket.PacketId {
-		case 0:
-			receivedPacket = packets.HandshakePacket{}
-			err := receivedPacket.From(reader)
-			if err != nil {
-				fmt.Println(err)
-				break
-			}
-			fmt.Println(receivedPacket)
-
-			break
+		err = client.ProcessPacket(connection, packetId, buffer.Bytes())
+		if err != nil {
+			return
 		}
 	}
 }
 
 func main() {
 	server := NewServer(":25565")
-	go server.ProcessRawPackets()
 	fmt.Println("Listening on :25565")
 
 	log.Fatal(server.Start())
