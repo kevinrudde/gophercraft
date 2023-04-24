@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/kevinrudde/gophercraft/internal/network"
-	"github.com/kevinrudde/gophercraft/internal/network/packet"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client"
 	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
 	"log"
@@ -14,14 +13,12 @@ type Server struct {
 	listenAddr string
 	listener   net.Listener
 	quitCh     chan struct{}
-	msgCh      chan *packet.RawPacket
 }
 
 func NewServer(listenAddr string) *Server {
 	return &Server{
 		listenAddr: listenAddr,
 		quitCh:     make(chan struct{}),
-		msgCh:      make(chan *packet.RawPacket, 10),
 	}
 }
 
@@ -36,7 +33,6 @@ func (s *Server) Start() error {
 	go s.acceptLoop()
 
 	<-s.quitCh
-	close(s.msgCh)
 
 	return nil
 }
