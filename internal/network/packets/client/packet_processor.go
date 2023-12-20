@@ -4,12 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/kevinrudde/gophercraft/internal/network"
+	"github.com/kevinrudde/gophercraft/internal/network/packets/client/common"
 	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
+	"reflect"
 )
 
 func ProcessPacket(connection networkplayer.PlayerConnection, packetId int, body []byte) error {
 	buffer := network.CreateBufferWithBuf(body)
-	var packet Packet
+	var packet common.Packet
 	var err error
 
 	switch connection.ConnectionState {
@@ -25,14 +27,18 @@ func ProcessPacket(connection networkplayer.PlayerConnection, packetId int, body
 		break
 	case network.Unknown:
 	default:
-		err = errors.New("Unknown state")
+		err = errors.New("unknown state")
 	}
 
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Process packet: ", packet)
+	fmt.Println("Process packet: ", reflect.TypeOf(packet).String())
+	processor, ok := PacketProcessors[reflect.TypeOf(packet).String()]
+	if !ok {
+		return errors.New(fmt.Sprintf("PacketId %d does not exists", packetId))
+	}
 
-	return nil
+	return processor(packet)
 }

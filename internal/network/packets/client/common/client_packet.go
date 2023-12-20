@@ -1,4 +1,4 @@
-package client
+package common
 
 import "github.com/kevinrudde/gophercraft/internal/network"
 
