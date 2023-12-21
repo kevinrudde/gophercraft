@@ -9,13 +9,16 @@ import (
 	"reflect"
 )
 
-func ProcessPacket(connection networkplayer.PlayerConnection, packetId int, body []byte) error {
+func ProcessPacket(connection *networkplayer.PlayerConnection, packetId int, body []byte) error {
 	buffer := network.CreateBufferWithBuf(body)
-	var packet common.Packet
+	var packet common.ClientPacket
 	var err error
 
 	switch connection.ConnectionState {
 
+	case network.Handshake:
+		packet, err = CreateHandshakePacket(packetId, buffer)
+		break
 	case network.Status:
 		packet, err = CreateStatusPacket(packetId, buffer)
 		break
@@ -40,5 +43,5 @@ func ProcessPacket(connection networkplayer.PlayerConnection, packetId int, body
 		return errors.New(fmt.Sprintf("PacketId %d does not exists", packetId))
 	}
 
-	return processor(packet)
+	return processor(connection, packet)
 }

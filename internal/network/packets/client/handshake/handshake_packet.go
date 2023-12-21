@@ -1,4 +1,4 @@
-package status
+package handshake
 
 import (
 	"github.com/kevinrudde/gophercraft/internal/network"

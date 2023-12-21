@@ -1,10 +1,13 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"github.com/kevinrudde/gophercraft/internal/network"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client"
 	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
+	"io"
+	"log"
 	"net"
 )
 
@@ -40,14 +43,13 @@ func (s *Server) acceptLoop() {
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
-			fmt.Println("accept error:", err)
+			log.Println("accept error:", err)
 			continue
 		}
 
-		fmt.Println("New connection from:", conn.RemoteAddr().String())
-		playerConnection := networkplayer.PlayerConnection{
+		playerConnection := &networkplayer.PlayerConnection{
 			Conn:            conn,
-			ConnectionState: network.Status,
+			ConnectionState: network.Handshake,
 		}
 		networkplayer.PlayerConnections[playerConnection] = struct{}{}
 
@@ -55,13 +57,17 @@ func (s *Server) acceptLoop() {
 	}
 }
 
-func (s *Server) readLoop(conn net.Conn, connection networkplayer.PlayerConnection) {
+func (s *Server) readLoop(conn net.Conn, connection *networkplayer.PlayerConnection) {
 	defer conn.Close()
 	buf := make([]byte, 2048)
 	for {
 		length, err := conn.Read(buf)
 		if err != nil {
-			fmt.Println("error:", err)
+			if errors.Is(err, io.EOF) {
+				break
+			}
+
+			fmt.Println("got an error in readLoop:", err)
 			break
 		}
 
@@ -83,6 +89,7 @@ func (s *Server) readLoop(conn net.Conn, connection networkplayer.PlayerConnecti
 
 		err = client.ProcessPacket(connection, packetId, buffer.Bytes())
 		if err != nil {
+			log.Println("got an error while processing packet", err)
 			return
 		}
 	}
