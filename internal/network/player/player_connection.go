@@ -15,11 +15,23 @@ type PlayerConnection struct {
 
 func (s *PlayerConnection) SendPacket(p common.ServerPacket) error {
 	buf := network.CreateBuffer()
+	dataBuf := network.CreateBuffer()
+	packetIdBuf := network.CreateBuffer()
 
-	err := p.Write(buf)
+	err := p.Write(dataBuf)
 	if err != nil {
 		return err
 	}
+
+	// TODO: optimize this to not create a new buffer for the packetId
+	packetId := p.PacketId()
+	packetIdLen := packetIdBuf.WriteVarInt(packetId)
+
+	length := dataBuf.Length() + packetIdLen
+
+	buf.WriteVarInt(length)
+	buf.WriteBuf(&packetIdBuf)
+	buf.WriteBuf(&dataBuf)
 
 	_, err = s.Conn.Write(buf.Bytes())
 	if err != nil {
@@ -27,4 +39,8 @@ func (s *PlayerConnection) SendPacket(p common.ServerPacket) error {
 	}
 
 	return nil
+}
+
+func (s *PlayerConnection) Close() error {
+	return s.Conn.Close()
 }

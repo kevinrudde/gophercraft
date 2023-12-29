@@ -27,6 +27,10 @@ func CreateBuffer() Buffer {
 	}
 }
 
+func (b *Buffer) Length() int {
+	return b.buf.Len()
+}
+
 func (b *Buffer) Bytes() []byte {
 	return b.buf.Bytes()
 }
@@ -119,6 +123,13 @@ func (b *Buffer) WriteInt32(value int32) error {
 	return err
 }
 
+func (b *Buffer) WriteInt64(value int64) error {
+	var buf [8]byte
+	binary.BigEndian.PutUint64(buf[:8], uint64(value))
+	_, err := b.buf.Write(buf[:8])
+	return err
+}
+
 func (b *Buffer) ReadInt64() (int64, error) {
 	var data [8]byte
 	_, err := b.buf.Read(data[:8])
@@ -174,13 +185,18 @@ func (b *Buffer) ReadVarInt() (int, error) {
 	return value, nil
 }
 
-func (b *Buffer) WriteVarInt(value int) {
+func (b *Buffer) WriteVarInt(value int) int {
+	previousLen := b.buf.Len()
 	for {
 		if value & ^SegmentBits == 0 {
 			b.buf.WriteByte(byte(value))
-			return
+			return b.buf.Len() - previousLen
 		}
 		b.buf.WriteByte(byte(value&SegmentBits | ContinueBit))
 		value >>= 7
 	}
+}
+
+func (b *Buffer) WriteBuf(buf *Buffer) {
+	b.buf.Write(buf.Bytes())
 }

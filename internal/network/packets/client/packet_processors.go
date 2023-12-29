@@ -22,4 +22,5 @@ func InitializeClientPacketProcessors() {
 
 	// Status
 	RegisterProcessor(reflect.TypeOf(&status.StatusRequestPacket{}).String(), status.ProcessStatusRequestPacket)
+	RegisterProcessor(reflect.TypeOf(&status.PingRequestPacket{}).String(), status.ProcessPingRequestPacket)
 }

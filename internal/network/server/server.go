@@ -63,7 +63,7 @@ func (s *Server) readLoop(conn net.Conn, connection *networkplayer.PlayerConnect
 	for {
 		length, err := conn.Read(buf)
 		if err != nil {
-			if errors.Is(err, io.EOF) {
+			if errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed) {
 				break
 			}
 
