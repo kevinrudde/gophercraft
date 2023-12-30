@@ -3,6 +3,8 @@ package status
 import (
 	"encoding/json"
 	"errors"
+	"github.com/kevinrudde/gophercraft/internal/event"
+	"github.com/kevinrudde/gophercraft/internal/event/server"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/common"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/server/handshake"
 	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
@@ -15,11 +17,19 @@ func ProcessStatusRequestPacket(connection *networkplayer.PlayerConnection, p co
 		return errors.New("expected StatusRequestPacket, but got " + reflect.TypeOf(p).String())
 	}
 
-	response := handshake.StatusResponsePacket{
-		Payload: GetListResponse(),
-	}
+	serverListEvent := &server.ServerListPingEvent{}
 
-	return connection.SendPacket(&response)
+	var err error
+
+	err = event.Call(serverListEvent, func() {
+		response := &handshake.StatusResponsePacket{
+			Payload: serverListEvent.ResponseData,
+		}
+
+		err = connection.SendPacket(response)
+	})
+
+	return err
 }
 
 func GetListResponse() string {
