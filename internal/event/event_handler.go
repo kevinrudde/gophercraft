@@ -28,7 +28,7 @@ func New() *EventHandler {
 
 var globalEvents = New()
 
-func Listen[K any](priority Priority, handlerFunc func(event K)) {
+func AddListener[K any](priority Priority, handlerFunc func(event K)) {
 	globalEvents.mutex.Lock()
 	defer globalEvents.mutex.Unlock()
 

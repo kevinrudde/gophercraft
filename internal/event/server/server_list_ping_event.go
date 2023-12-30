@@ -1,5 +1,7 @@
 package server
 
+import "github.com/kevinrudde/gophercraft/pkg/ping"
+
 type ServerListPingEvent struct {
-	ResponseData string
+	ResponseData ping.ResponseData
 }
