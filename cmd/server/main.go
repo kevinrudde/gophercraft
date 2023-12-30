@@ -2,47 +2,38 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/kevinrudde/gophercraft/internal/crypto"
 	"github.com/kevinrudde/gophercraft/internal/event"
 	server2 "github.com/kevinrudde/gophercraft/internal/event/server"
-	"github.com/kevinrudde/gophercraft/internal/network/packets/client"
-	"github.com/kevinrudde/gophercraft/internal/network/server"
+	"github.com/kevinrudde/gophercraft/pkg/minecraft"
 	"log"
 )
 
 func main() {
-	go Init()
-	networkServer := server.NewServer(":25565")
-	fmt.Println("Listening on :25565")
-
-	client.InitializeClientPacketProcessors()
-
-	log.Fatal(networkServer.Start())
-}
-
-func Init() {
-	crypto.Init()
+	minecraft.Instance.Init()
 	Listen()
+
+	log.Println("Listening on :25565")
+	err := minecraft.Instance.Start(":25565")
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func Listen() {
-	event.Listen(&server2.ServerListPingEvent{}, event.Lowest, func(message event.Message) {
-		log.Println("ServerListPingEvent")
-		serverListPingEvent := message.(*server2.ServerListPingEvent)
-		serverListPingEvent.ResponseData = GetListResponse("Gophercraft")
+	event.Listen[*server2.ServerListPingEvent](event.Highest, func(event *server2.ServerListPingEvent) {
+		log.Println("ServerListPingEvent 1")
+		event.ResponseData = GetListResponse("Gophercraft")
 	})
 
-	event.Listen(&server2.ServerListPingEvent{}, event.Highest, func(message event.Message) {
-		log.Println("ServerListPingEvent2")
-		serverListPingEvent := message.(*server2.ServerListPingEvent)
-		serverListPingEvent.ResponseData = GetListResponse("Gophercraft2")
+	event.Listen[*server2.ServerListPingEvent](event.Lowest, func(event *server2.ServerListPingEvent) {
+		log.Println("ServerListPingEvent 2")
+		event.ResponseData = GetListResponse("Gophercraft 2")
 	})
 
-	event.Listen(&server2.ServerListPingEvent{}, event.Monitor, func(message event.Message) {
-		log.Println("ServerListPingEvent3")
-		serverListPingEvent := message.(*server2.ServerListPingEvent)
-		serverListPingEvent.ResponseData = GetListResponse("Gophercraft3")
+	event.Listen[*server2.ServerListPingEvent](event.Monitor, func(event *server2.ServerListPingEvent) {
+		log.Println("ServerListPingEvent 3")
+		event.ResponseData = GetListResponse("Gophercraft 3")
 	})
 }
 

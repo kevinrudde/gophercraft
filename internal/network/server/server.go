@@ -17,14 +17,14 @@ type Server struct {
 	quitCh     chan struct{}
 }
 
-func NewServer(listenAddr string) *Server {
+func NewServer() *Server {
 	return &Server{
-		listenAddr: listenAddr,
-		quitCh:     make(chan struct{}),
+		quitCh: make(chan struct{}),
 	}
 }
 
-func (s *Server) Start() error {
+func (s *Server) Start(listenAddr string) error {
+	s.listenAddr = listenAddr
 	listener, err := net.Listen("tcp", s.listenAddr)
 	if err != nil {
 		return err

@@ -3,10 +3,10 @@ package event
 type Priority int
 
 const (
-	Monitor Priority = -1
-	Lowest  Priority = 0
-	Low     Priority = 1
-	Normal  Priority = 2
-	High    Priority = 3
-	Highest Priority = 4
+	Monitor Priority = 0
+	Lowest  Priority = 1
+	Low     Priority = 2
+	Normal  Priority = 3
+	High    Priority = 4
+	Highest Priority = 5
 )
