@@ -1,7 +1,9 @@
 package networkplayer
 
 import (
+	"github.com/google/uuid"
 	"github.com/kevinrudde/gophercraft/internal/network"
+	"github.com/kevinrudde/gophercraft/internal/network/encryption"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/server/common"
 	"net"
 )
@@ -9,8 +11,13 @@ import (
 var PlayerConnections = make(map[*PlayerConnection]struct{})
 
 type PlayerConnection struct {
-	Conn            net.Conn
-	ConnectionState network.ConnectionState
+	Conn                net.Conn
+	ConnectionState     network.ConnectionState
+	EncryptionDetails   *encryption.Details
+	EncryptedConnection *encryption.Connection
+
+	Uuid     *uuid.UUID
+	Username string
 }
 
 func (s *PlayerConnection) SendPacket(p common.ServerPacket) error {
@@ -32,6 +39,10 @@ func (s *PlayerConnection) SendPacket(p common.ServerPacket) error {
 	buf.WriteVarInt(length)
 	buf.WriteBuf(&packetIdBuf)
 	buf.WriteBuf(&dataBuf)
+
+	if s.EncryptedConnection != nil {
+		s.EncryptedConnection.Encrypter.XORKeyStream(buf.Bytes(), buf.Bytes())
+	}
 
 	_, err = s.Conn.Write(buf.Bytes())
 	if err != nil {

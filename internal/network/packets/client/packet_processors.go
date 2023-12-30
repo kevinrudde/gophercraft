@@ -3,6 +3,7 @@ package client
 import (
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/common"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/handshake"
+	"github.com/kevinrudde/gophercraft/internal/network/packets/client/login"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/status"
 	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
 	"reflect"
@@ -23,4 +24,8 @@ func InitializeClientPacketProcessors() {
 	// Status
 	RegisterProcessor(reflect.TypeOf(&status.StatusRequestPacket{}).String(), status.ProcessStatusRequestPacket)
 	RegisterProcessor(reflect.TypeOf(&status.PingRequestPacket{}).String(), status.ProcessPingRequestPacket)
+
+	// Login
+	RegisterProcessor(reflect.TypeOf(&login.LoginStartPacket{}).String(), login.ProcessLoginStartPacket)
+	RegisterProcessor(reflect.TypeOf(&login.EncryptionResponsePacket{}).String(), login.ProcessEncryptionResponsePacket)
 }

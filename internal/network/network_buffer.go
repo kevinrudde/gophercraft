@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"github.com/google/uuid"
 )
 
 type Buffer struct {
@@ -54,6 +55,19 @@ func (b *Buffer) WriteBool(value bool) {
 	} else {
 		b.buf.WriteByte(0x00)
 	}
+}
+
+func (b *Buffer) ReadBytes(length int) ([]byte, error) {
+	data := make([]byte, length)
+	_, err := b.buf.Read(data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (b *Buffer) WriteBytes(value []byte) {
+	b.buf.Write(value)
 }
 
 func (b *Buffer) ReadByte() (byte, error) {
@@ -139,6 +153,20 @@ func (b *Buffer) ReadInt64() (int64, error) {
 	value := binary.BigEndian.Uint64(data[:8])
 
 	return int64(value), nil
+}
+
+func (b *Buffer) ReadUuid() (*uuid.UUID, error) {
+	var data [16]byte
+	_, err := b.buf.Read(data[:16])
+	if err != nil {
+		return nil, err
+	}
+	readUuid, err := uuid.FromBytes(data[:16])
+	return &readUuid, err
+}
+
+func (b *Buffer) WriteUuid(uuid *uuid.UUID) {
+	b.buf.Write(uuid[:])
 }
 
 func (b *Buffer) ReadString() (string, error) {

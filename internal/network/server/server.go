@@ -73,6 +73,10 @@ func (s *Server) readLoop(conn net.Conn, connection *networkplayer.PlayerConnect
 
 		msg := buf[:length]
 
+		if connection.EncryptedConnection != nil {
+			connection.EncryptedConnection.Decrypter.XORKeyStream(msg, msg)
+		}
+
 		buffer := network.CreateBufferWithBuf(msg)
 		packetLength, err := buffer.ReadVarInt()
 		if err != nil {

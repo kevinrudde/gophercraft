@@ -44,8 +44,8 @@ func GetListResponse() string {
 		PreviewsChat       bool   `json:"previewsChat"`
 	}
 
-	list.Version.Protocol = 764
-	list.Version.Name = "1.20.2"
+	list.Version.Protocol = 765
+	list.Version.Name = "1.20.4"
 	list.Players.Max = 100
 	list.Players.Online = 0
 	list.Description.Text = "Gophercraft"
