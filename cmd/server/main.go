@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/kevinrudde/gophercraft/internal/event"
 	server2 "github.com/kevinrudde/gophercraft/internal/event/server"
+	"github.com/kevinrudde/gophercraft/pkg/chat"
 	"github.com/kevinrudde/gophercraft/pkg/minecraft"
 	"github.com/kevinrudde/gophercraft/pkg/ping"
 	"log"
@@ -37,14 +38,17 @@ func Listen() {
 	})
 }
 
-func GetListResponse(description string) ping.ResponseData {
-	return ping.ResponseData{
+func GetListResponse(description string) *ping.ResponseData {
+	chatComponent := chat.Text("Gophercraft\n").WithColor("#fca903")
+	chatComponent = chatComponent.Append(chat.Text("1.20.4").WithColor("#a503fc"))
+
+	return &ping.ResponseData{
 		Version:       "1.20.4",
 		Protocol:      765,
 		HidePlayers:   false,
 		MaxPlayers:    100,
 		OnlinePlayers: 0,
-		Description:   description,
+		Description:   chatComponent,
 		Favicon:       "",
 	}
 }

@@ -2,6 +2,7 @@ package ping
 
 import (
 	"encoding/json"
+	"github.com/kevinrudde/gophercraft/pkg/chat"
 )
 
 type StatusResponse struct {
@@ -17,12 +18,10 @@ type StatusResponse struct {
 			ID   string `json:"id"`
 		} `json:"sample,omitempty"`
 	} `json:"players,omitempty"`
-	Description struct {
-		Text string `json:"text"`
-	} `json:"description"`
-	EnforcesSecureChat bool   `json:"enforcesSecureChat,omitempty"`
-	FavIcon            string `json:"favicon,omitempty"`
-	PreviewsChat       bool   `json:"previewsChat,omitempty"`
+	Description        chat.Message `json:"description"`
+	EnforcesSecureChat bool         `json:"enforcesSecureChat,omitempty"`
+	FavIcon            string       `json:"favicon,omitempty"`
+	PreviewsChat       bool         `json:"previewsChat,omitempty"`
 }
 
 type ResponseData struct {
@@ -31,7 +30,7 @@ type ResponseData struct {
 	HidePlayers   bool
 	MaxPlayers    int
 	OnlinePlayers int
-	Description   string
+	Description   chat.Message
 	Favicon       string
 }
 
@@ -45,7 +44,7 @@ func (s *ResponseData) GetPingResponse() string {
 		response.Players.Online = s.OnlinePlayers
 	}
 
-	response.Description.Text = s.Description
+	response.Description = s.Description
 	response.FavIcon = s.Favicon
 
 	responseJson, err := json.Marshal(response)
