@@ -11,6 +11,7 @@ import (
 var loginPacketMap = map[int]common.ClientPacket{
 	0x00: &login.LoginStartPacket{},
 	0x01: &login.EncryptionResponsePacket{},
+	0x03: &login.LoginAcknowledgedPacket{},
 }
 
 func CreateLoginPacket(packetId int, buffer network.Buffer) (common.ClientPacket, error) {

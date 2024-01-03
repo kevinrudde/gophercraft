@@ -28,7 +28,6 @@ func ProcessPacket(connection *networkplayer.PlayerConnection, packetId int, bod
 	case network.Play:
 		packet, err = CreatePlayPacket(packetId, buffer)
 		break
-	case network.Unknown:
 	default:
 		err = errors.New("unknown state")
 	}

@@ -28,4 +28,5 @@ func InitializeClientPacketProcessors() {
 	// Login
 	RegisterProcessor(reflect.TypeOf(&login.LoginStartPacket{}).String(), login.ProcessLoginStartPacket)
 	RegisterProcessor(reflect.TypeOf(&login.EncryptionResponsePacket{}).String(), login.ProcessEncryptionResponsePacket)
+	RegisterProcessor(reflect.TypeOf(&login.LoginAcknowledgedPacket{}).String(), login.ProcessLoginAcknowledgedPacket)
 }
