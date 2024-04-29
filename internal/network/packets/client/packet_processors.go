@@ -1,32 +1,24 @@
 package client
 
 import (
+	"errors"
+	"github.com/kevinrudde/gophercraft/internal/network"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/common"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/handshake"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/login"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/status"
 	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
-	"reflect"
 )
 
-type ProcessorFunc func(connection *networkplayer.PlayerConnection, packet common.ClientPacket) error
-
-var PacketProcessors = make(map[string]ProcessorFunc)
-
-func RegisterProcessor(packetType string, processor ProcessorFunc) {
-	PacketProcessors[packetType] = processor
-}
-
-func InitializeClientPacketProcessors() {
-	// Handshake
-	RegisterProcessor(reflect.TypeOf(&handshake.HandshakePacket{}).String(), handshake.ProcessHandshakePacket)
-
-	// Status
-	RegisterProcessor(reflect.TypeOf(&status.StatusRequestPacket{}).String(), status.ProcessStatusRequestPacket)
-	RegisterProcessor(reflect.TypeOf(&status.PingRequestPacket{}).String(), status.ProcessPingRequestPacket)
-
-	// Login
-	RegisterProcessor(reflect.TypeOf(&login.LoginStartPacket{}).String(), login.ProcessLoginStartPacket)
-	RegisterProcessor(reflect.TypeOf(&login.EncryptionResponsePacket{}).String(), login.ProcessEncryptionResponsePacket)
-	RegisterProcessor(reflect.TypeOf(&login.LoginAcknowledgedPacket{}).String(), login.ProcessLoginAcknowledgedPacket)
+func CallProcessor(connection *networkplayer.PlayerConnection, packet common.ClientPacket) error {
+	switch connection.ConnectionState {
+	case network.Handshake:
+		return handshake.CallProcessor(connection, packet)
+	case network.Status:
+		return status.CallProcessor(connection, packet)
+	case network.Login:
+		return login.CallProcessor(connection, packet)
+	default:
+		return errors.New("unknown state")
+	}
 }

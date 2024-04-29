@@ -2,7 +2,6 @@ package minecraft
 
 import (
 	"github.com/kevinrudde/gophercraft/internal/crypto"
-	"github.com/kevinrudde/gophercraft/internal/network/packets/client"
 	"github.com/kevinrudde/gophercraft/internal/network/server"
 )
 
@@ -24,8 +23,6 @@ var Instance *Server = newServer()
 func (s *Server) Init() {
 	crypto.Init()
 	s.networkServer = server.NewServer()
-
-	client.InitializeClientPacketProcessors()
 }
 
 // Start starts the Minecraft server on the given address.

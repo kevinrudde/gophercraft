@@ -9,18 +9,11 @@ import (
 	"errors"
 	"github.com/kevinrudde/gophercraft/internal/crypto"
 	"github.com/kevinrudde/gophercraft/internal/network/encryption"
-	"github.com/kevinrudde/gophercraft/internal/network/packets/client/common"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/server/login"
 	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
-	"reflect"
 )
 
-func ProcessEncryptionResponsePacket(connection *networkplayer.PlayerConnection, p common.ClientPacket) error {
-	packet, ok := p.(*EncryptionResponsePacket)
-	if !ok {
-		return errors.New("expected EncryptionResponsePacket, but got " + reflect.TypeOf(p).String())
-	}
-
+func ProcessEncryptionResponsePacket(connection *networkplayer.PlayerConnection, packet *EncryptionResponsePacket) error {
 	decryptedVerifyToken, err := rsa.DecryptPKCS1v15(rand.Reader, crypto.PrivateKey, packet.VerifyToken)
 	if err != nil {
 		return err

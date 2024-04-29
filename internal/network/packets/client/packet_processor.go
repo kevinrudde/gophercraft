@@ -2,11 +2,9 @@ package client
 
 import (
 	"errors"
-	"fmt"
 	"github.com/kevinrudde/gophercraft/internal/network"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/common"
 	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
-	"reflect"
 )
 
 func ProcessPacket(connection *networkplayer.PlayerConnection, packetId int, body []byte) error {
@@ -36,11 +34,5 @@ func ProcessPacket(connection *networkplayer.PlayerConnection, packetId int, bod
 		return err
 	}
 
-	fmt.Println("Process packet: ", reflect.TypeOf(packet).String())
-	processor, ok := PacketProcessors[reflect.TypeOf(packet).String()]
-	if !ok {
-		return errors.New(fmt.Sprintf("PacketId %d does not exists", packetId))
-	}
-
-	return processor(connection, packet)
+	return CallProcessor(connection, packet)
 }

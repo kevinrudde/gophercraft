@@ -1,20 +1,17 @@
 package handshake
 
 import (
-	"errors"
 	"github.com/kevinrudde/gophercraft/internal/network"
-	"github.com/kevinrudde/gophercraft/internal/network/packets/client/common"
 	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
-	"reflect"
+	"log"
 )
 
-func ProcessHandshakePacket(connection *networkplayer.PlayerConnection, p common.ClientPacket) error {
-	packet, ok := p.(*HandshakePacket)
-	if !ok {
-		return errors.New("expected HandshakePacket, but got " + reflect.TypeOf(p).String())
-	}
-
+func ProcessHandshakePacket(connection *networkplayer.PlayerConnection, packet *HandshakePacket) error {
 	connection.ConnectionState = network.ConnectionState(packet.NextState)
+
+	log.Println(packet.ServerAddress)
+	log.Println(packet.ProtocolVersion)
+	log.Println(packet.ServerPort)
 
 	return nil
 }

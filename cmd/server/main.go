@@ -23,19 +23,19 @@ func main() {
 
 func Listen() {
 	event.AddListener[*server2.ServerListPingEvent](event.Highest, func(event *server2.ServerListPingEvent) {
-		log.Println("ServerListPingEvent 1")
+		log.Println("ServerListPingEvent")
 		event.ResponseData = GetListResponse("Gophercraft")
 	})
 
-	event.AddListener[*server2.ServerListPingEvent](event.Lowest, func(event *server2.ServerListPingEvent) {
-		log.Println("ServerListPingEvent 2")
-		event.ResponseData = GetListResponse("Gophercraft 2")
-	})
-
-	event.AddListener[*server2.ServerListPingEvent](event.Monitor, func(event *server2.ServerListPingEvent) {
-		log.Println("ServerListPingEvent 3")
-		event.ResponseData = GetListResponse("Gophercraft 3")
-	})
+	//event.AddListener[*server2.ServerListPingEvent](event.Lowest, func(event *server2.ServerListPingEvent) {
+	//	log.Println("ServerListPingEvent 2")
+	//	event.ResponseData = GetListResponse("Gophercraft 2")
+	//})
+	//
+	//event.AddListener[*server2.ServerListPingEvent](event.Monitor, func(event *server2.ServerListPingEvent) {
+	//	log.Println("ServerListPingEvent 3")
+	//	event.ResponseData = GetListResponse("Gophercraft 3")
+	//})
 }
 
 func GetListResponse(description string) *ping.ResponseData {
