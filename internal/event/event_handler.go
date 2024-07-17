@@ -7,61 +7,61 @@ import (
 	"sync"
 )
 
-type HandlerFunc[K any] func(event K)
+type HandlerFunc[T any] func(event T)
 
-type Handler[K any] struct {
-	handlerFunc HandlerFunc[K]
+type Handler[T any] struct {
+	handlerFunc HandlerFunc[T]
 	priority    Priority
 }
 
 type EventHandler struct {
 	mutex    sync.RWMutex
-	handlers map[string][]any // TODO: change to Handler[K] ideally
+	handlers map[reflect.Type][]interface{}
 }
 
 func New() *EventHandler {
 	return &EventHandler{
-		handlers: map[string][]any{},
+		handlers: make(map[reflect.Type][]interface{}),
 	}
 
 }
 
 var globalEvents = New()
 
-func AddListener[K any](priority Priority, handlerFunc func(event K)) {
+func AddListener[T any](priority Priority, handlerFunc func(event T)) {
 	globalEvents.mutex.Lock()
 	defer globalEvents.mutex.Unlock()
 
-	handler := Handler[K]{
+	handler := Handler[T]{
 		handlerFunc: handlerFunc,
 		priority:    priority,
 	}
 
-	var eventGeneric K
-	eventType := reflect.TypeOf(eventGeneric).String()
+	var eventGeneric T
+	eventType := reflect.TypeOf(eventGeneric)
 
 	globalEvents.handlers[eventType] = append(globalEvents.handlers[eventType], handler)
 
 	sort.SliceStable(globalEvents.handlers[eventType], func(i, j int) bool {
-		iHandler := globalEvents.handlers[eventType][i].(Handler[K])
-		jHandler := globalEvents.handlers[eventType][j].(Handler[K])
+		iHandler := globalEvents.handlers[eventType][i].(Handler[T])
+		jHandler := globalEvents.handlers[eventType][j].(Handler[T])
 
 		return iHandler.priority < jHandler.priority
 	})
 }
 
-func Call[K any](event K, successCallback func()) error {
-	eventType := reflect.TypeOf(event).String()
+func Call[T any](event T, successCallback func()) error {
+	eventType := reflect.TypeOf(event)
 
 	globalEvents.mutex.RLock()
 	defer globalEvents.mutex.RUnlock()
 
 	if _, ok := globalEvents.handlers[eventType]; !ok {
-		return fmt.Errorf("handler %s not found", event)
+		return fmt.Errorf("handler %s not found", eventType.String())
 	}
 
 	for _, h := range globalEvents.handlers[eventType] {
-		handlerFunc := h.(Handler[K]).handlerFunc
+		handlerFunc := h.(Handler[T]).handlerFunc
 		handlerFunc(event)
 	}
 
