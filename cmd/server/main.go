@@ -15,7 +15,7 @@ func main() {
 	Listen()
 
 	log.Println("Listening on :25565")
-	err := minecraft.Instance.Start(":25565")
+	err := minecraft.Instance.Start("127.0.0.1:25565")
 
 	if err != nil {
 		log.Fatal(err)
@@ -41,11 +41,11 @@ func Listen() {
 
 func GetListResponse(description string) *ping.ResponseData {
 	chatComponent := chat.Text(description + "\n").WithColor("#fca903")
-	chatComponent = chatComponent.Append(chat.Text("1.20.4").WithColor("#a503fc"))
+	chatComponent = chatComponent.Append(chat.Text("1.21").WithColor("#a503fc"))
 
 	return &ping.ResponseData{
-		Version:       "1.20.4",
-		Protocol:      765,
+		Version:       "1.21",
+		Protocol:      767,
 		HidePlayers:   false,
 		MaxPlayers:    100,
 		OnlinePlayers: 0,

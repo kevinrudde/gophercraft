@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"crypto/subtle"
 	"errors"
+
 	"github.com/kevinrudde/gophercraft/internal/crypto"
 	"github.com/kevinrudde/gophercraft/internal/network/encryption"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/server/login"

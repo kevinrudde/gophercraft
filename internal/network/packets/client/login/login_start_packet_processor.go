@@ -2,11 +2,12 @@ package login
 
 import (
 	"crypto/rand"
+	"log"
+
 	"github.com/kevinrudde/gophercraft/internal/crypto"
 	"github.com/kevinrudde/gophercraft/internal/network/encryption"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/server/login"
 	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
-	"log"
 )
 
 func ProcessLoginStartPacket(connection *networkplayer.PlayerConnection, packet *LoginStartPacket) error {
@@ -26,11 +27,12 @@ func ProcessLoginStartPacket(connection *networkplayer.PlayerConnection, packet 
 	connection.Username = packet.Name
 
 	response := &login.EncryptionRequestPacket{
-		ServerId:          "",
-		PublicKeyLength:   crypto.PublicKeyLen,
-		PublicKey:         crypto.PublicKey,
-		VerifyTokenLength: len(verifyToken),
-		VerifyToken:       verifyToken,
+		ServerId:           "",
+		PublicKeyLength:    crypto.PublicKeyLen,
+		PublicKey:          crypto.PublicKey,
+		VerifyTokenLength:  len(verifyToken),
+		VerifyToken:        verifyToken,
+		ShouldAuthenticate: true,
 	}
 
 	return connection.SendPacket(response)
