@@ -1,7 +1,9 @@
 package client
 
 import (
-	"errors"
+	"fmt"
+	"log"
+
 	"github.com/kevinrudde/gophercraft/internal/network"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/common"
 	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
@@ -11,6 +13,8 @@ func ProcessPacket(connection *networkplayer.PlayerConnection, packetId int, bod
 	buffer := network.CreateBufferWithBuf(body)
 	var packet common.ClientPacket
 	var err error
+
+	log.Println(connection.ConnectionState)
 
 	switch connection.ConnectionState {
 
@@ -23,15 +27,22 @@ func ProcessPacket(connection *networkplayer.PlayerConnection, packetId int, bod
 	case network.Login:
 		packet, err = CreateLoginPacket(packetId, buffer)
 		break
+	case network.Configuration:
+		packet, err = CreateConfigurationPacket(packetId, buffer)
+		break
 	case network.Play:
 		packet, err = CreatePlayPacket(packetId, buffer)
 		break
 	default:
-		err = errors.New("unknown state")
+		err = fmt.Errorf("unknown state with id %d", connection.ConnectionState)
 	}
 
 	if err != nil {
 		return err
+	}
+
+	if packet == nil {
+		return nil
 	}
 
 	return CallProcessor(connection, packet)

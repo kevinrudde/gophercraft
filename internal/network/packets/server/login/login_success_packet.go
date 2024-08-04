@@ -7,9 +7,10 @@ import (
 
 // LoginSuccessPacket https://wiki.vg/Protocol#Login_Success
 type LoginSuccessPacket struct {
-	Uuid               *uuid.UUID
-	Username           string
-	NumberOfProperties int
+	Uuid                *uuid.UUID
+	Username            string
+	NumberOfProperties  int
+	StrictErrorHandling bool
 }
 
 func (p *LoginSuccessPacket) PacketId() int {
@@ -20,6 +21,7 @@ func (p *LoginSuccessPacket) Write(buffer network.Buffer) error {
 	buffer.WriteUuid(p.Uuid)
 	buffer.WriteString(p.Username)
 	buffer.WriteVarInt(p.NumberOfProperties)
+	buffer.WriteBool(p.StrictErrorHandling)
 
 	return nil
 }

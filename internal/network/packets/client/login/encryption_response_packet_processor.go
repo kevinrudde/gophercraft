@@ -41,9 +41,10 @@ func ProcessEncryptionResponsePacket(connection *networkplayer.PlayerConnection,
 	}
 
 	response := &login.LoginSuccessPacket{
-		Uuid:               connection.Uuid,
-		Username:           connection.Username,
-		NumberOfProperties: 0,
+		Uuid:                connection.Uuid,
+		Username:            connection.Username,
+		NumberOfProperties:  0,
+		StrictErrorHandling: true,
 	}
 
 	return connection.SendPacket(response)

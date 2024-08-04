@@ -2,8 +2,10 @@ package client
 
 import (
 	"errors"
+
 	"github.com/kevinrudde/gophercraft/internal/network"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/common"
+	"github.com/kevinrudde/gophercraft/internal/network/packets/client/configuration"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/handshake"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/login"
 	"github.com/kevinrudde/gophercraft/internal/network/packets/client/status"
@@ -18,6 +20,8 @@ func CallProcessor(connection *networkplayer.PlayerConnection, packet common.Cli
 		return status.CallProcessor(connection, packet)
 	case network.Login:
 		return login.CallProcessor(connection, packet)
+	case network.Configuration:
+		return configuration.CallProcessor(connection, packet)
 	default:
 		return errors.New("unknown state")
 	}
