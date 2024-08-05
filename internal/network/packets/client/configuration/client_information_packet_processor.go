@@ -1,14 +1,18 @@
 package configuration
 
 import (
-	"fmt"
-
+	"github.com/kevinrudde/gophercraft/internal/network/packets/server/configuration"
 	networkplayer "github.com/kevinrudde/gophercraft/internal/network/player"
+	"log"
 )
 
 func ProcessClientInformationPacket(connection *networkplayer.PlayerConnection, packet *ClientInformationPacket) error {
-	fmt.Println("Processing configuration packet")
-	fmt.Println(packet.Locale)
+	featureFlags := make([]string, 1)
+	featureFlags[0] = "minecraft:vanilla"
 
-	return nil
+	response := &configuration.FeatureFlagsPacket{FeatureFlags: featureFlags}
+
+	log.Printf("Sending client information packet to server: %v", response)
+
+	return connection.SendPacket(response)
 }

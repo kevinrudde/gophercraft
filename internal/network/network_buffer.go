@@ -228,3 +228,15 @@ func (b *Buffer) WriteVarInt(value int) int {
 func (b *Buffer) WriteBuf(buf *Buffer) {
 	b.buf.Write(buf.Bytes())
 }
+
+func (b *Buffer) WriteStringSlice(slice []string) error {
+	if len(slice) == 0 {
+		return b.WriteByte(0)
+	}
+
+	b.WriteVarInt(len(slice))
+	for _, value := range slice {
+		b.WriteString(value)
+	}
+	return nil
+}
