@@ -10,10 +10,10 @@ import (
 
 var configurationPacketMap = map[int]common.ClientPacket{
 	0x00: &configuration.ClientInformationPacket{},
+	0x07: &configuration.ServerboundKnownPacksPacket{},
 }
 
 func CreateConfigurationPacket(packetId int, buffer network.Buffer) (common.ClientPacket, error) {
-	log.Printf("Id: %d", packetId)
 	packet, ok := configurationPacketMap[packetId]
 	if !ok {
 		log.Printf("PacketId %d does not exists", packetId)

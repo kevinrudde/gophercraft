@@ -9,6 +9,8 @@ func CallProcessor(connection *networkplayer.PlayerConnection, packet common.Cli
 	switch packet.(type) {
 	case *ClientInformationPacket:
 		return ProcessClientInformationPacket(connection, packet.(*ClientInformationPacket))
+	case *ServerboundKnownPacksPacket:
+		return ProcessServerboundKnownPacksPacket(connection, packet.(*ServerboundKnownPacksPacket))
 	}
 
 	return nil

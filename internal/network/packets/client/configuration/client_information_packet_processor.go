@@ -10,9 +10,24 @@ func ProcessClientInformationPacket(connection *networkplayer.PlayerConnection, 
 	featureFlags := make([]string, 1)
 	featureFlags[0] = "minecraft:vanilla"
 
-	response := &configuration.FeatureFlagsPacket{FeatureFlags: featureFlags}
+	featureFlagPacket := &configuration.FeatureFlagsPacket{FeatureFlags: featureFlags}
 
-	log.Printf("Sending client information packet to server: %v", response)
+	log.Printf("Sending client information packet to server: %v", featureFlagPacket)
 
-	return connection.SendPacket(response)
+	err := connection.SendPacket(featureFlagPacket)
+	if err != nil {
+		return err
+	}
+
+	clientboundKnownPacksPacket := &configuration.ClientboundKnownPacksPacket{
+		KnownPacks: []configuration.KnownPacks{
+			{
+				Namespace: "minecraft",
+				ID:        "core",
+				Version:   "1.21",
+			},
+		},
+	}
+
+	return connection.SendPacket(clientboundKnownPacksPacket)
 }
