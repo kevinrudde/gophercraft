@@ -5,7 +5,14 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/google/uuid"
+	"sync"
 )
+
+var bufferPool = sync.Pool{
+	New: func() any {
+		return createBuffer()
+	},
+}
 
 type Buffer struct {
 	buf *bytes.Buffer
@@ -16,13 +23,22 @@ const (
 	ContinueBit = 0x80
 )
 
-func CreateBufferWithBuf(buf []byte) Buffer {
-	return Buffer{
-		buf: bytes.NewBuffer(buf),
-	}
+func GetBufferFromPool() Buffer {
+	return bufferPool.Get().(Buffer)
 }
 
-func CreateBuffer() Buffer {
+func GetBufferFromPoolWithBuf(buf []byte) Buffer {
+	buffer := bufferPool.Get().(Buffer)
+	buffer.WriteBytes(buf)
+	return buffer
+}
+
+func PutBufferToPool(b Buffer) {
+	b.Reset()
+	bufferPool.Put(b)
+}
+
+func createBuffer() Buffer {
 	return Buffer{
 		buf: new(bytes.Buffer),
 	}
@@ -239,4 +255,8 @@ func (b *Buffer) WriteStringSlice(slice []string) error {
 		b.WriteString(value)
 	}
 	return nil
+}
+
+func (b *Buffer) Reset() {
+	b.buf.Reset()
 }

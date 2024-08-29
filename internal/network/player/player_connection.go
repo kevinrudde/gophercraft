@@ -21,9 +21,12 @@ type PlayerConnection struct {
 }
 
 func (s *PlayerConnection) SendPacket(p common.ServerPacket) error {
-	buf := network.CreateBuffer()
-	dataBuf := network.CreateBuffer()
-	packetIdBuf := network.CreateBuffer()
+	buf := network.GetBufferFromPool()
+	defer network.PutBufferToPool(buf)
+	dataBuf := network.GetBufferFromPool()
+	defer network.PutBufferToPool(dataBuf)
+	packetIdBuf := network.GetBufferFromPool()
+	defer network.PutBufferToPool(packetIdBuf)
 
 	err := p.Write(dataBuf)
 	if err != nil {

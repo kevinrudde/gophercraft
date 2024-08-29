@@ -8,7 +8,7 @@ import (
 )
 
 func ProcessPacket(connection *networkplayer.PlayerConnection, packetId int, body []byte) error {
-	buffer := network.CreateBufferWithBuf(body)
+	buffer := network.GetBufferFromPoolWithBuf(body)
 	var packet common.ClientPacket
 	var err error
 

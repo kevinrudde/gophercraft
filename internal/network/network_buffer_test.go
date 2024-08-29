@@ -5,7 +5,8 @@ import (
 )
 
 func TestCreateBuffer(t *testing.T) {
-	buffer := CreateBuffer()
+	buffer := GetBufferFromPool()
+	defer PutBufferToPool(buffer)
 	bufLen := buffer.buf.Len()
 	if bufLen != 0 {
 		t.Errorf("Buffer length incorrect, got: %d, want: %d", bufLen, 0)
@@ -17,7 +18,8 @@ func TestCreateBufferWithBuf(t *testing.T) {
 }
 
 func TestBuffer_Write_And_Read_Bool(t *testing.T) {
-	buffer := CreateBuffer()
+	buffer := GetBufferFromPool()
+	defer PutBufferToPool(buffer)
 	buffer.WriteBool(true)
 
 	value, err := buffer.ReadBool()
@@ -31,7 +33,8 @@ func TestBuffer_Write_And_Read_Bool(t *testing.T) {
 }
 
 func TestBuffer_Write_And_Read_Int16(t *testing.T) {
-	buffer := CreateBuffer()
+	buffer := GetBufferFromPool()
+	defer PutBufferToPool(buffer)
 	buffer.WriteInt16(64)
 
 	value, err := buffer.ReadInt16()
@@ -45,7 +48,8 @@ func TestBuffer_Write_And_Read_Int16(t *testing.T) {
 }
 
 func TestBuffer_Write_And_Read_UInt16(t *testing.T) {
-	buffer := CreateBuffer()
+	buffer := GetBufferFromPool()
+	defer PutBufferToPool(buffer)
 	buffer.WriteUInt16(64)
 
 	value, err := buffer.ReadUInt16()
@@ -59,7 +63,8 @@ func TestBuffer_Write_And_Read_UInt16(t *testing.T) {
 }
 
 func TestBuffer_Write_And_Read_Int32(t *testing.T) {
-	buffer := CreateBuffer()
+	buffer := GetBufferFromPool()
+	defer PutBufferToPool(buffer)
 	buffer.WriteInt32(64)
 
 	value, err := buffer.ReadInt32()
@@ -73,7 +78,8 @@ func TestBuffer_Write_And_Read_Int32(t *testing.T) {
 }
 
 func TestBufferWithData(t *testing.T) {
-	buf := CreateBuffer()
+	buf := GetBufferFromPool()
+	defer PutBufferToPool(buf)
 
 	// write test data to the buffer
 	buf.WriteBool(true)
