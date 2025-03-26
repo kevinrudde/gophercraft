@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"github.com/google/uuid"
 	"sync"
+
+	"github.com/google/uuid"
+	"github.com/kevinrudde/gophercraft/pkg/nbt"
 )
 
 var bufferPool = sync.Pool{
@@ -255,6 +257,18 @@ func (b *Buffer) WriteStringSlice(slice []string) error {
 		b.WriteString(value)
 	}
 	return nil
+}
+
+func (b *Buffer) ReadNBT() (nbt.Tag, error) {
+	tag, err := nbt.ReadNamedTag(b.buf)
+	if err != nil {
+		return nil, err
+	}
+	return tag, nil
+}
+
+func (b *Buffer) WriteNBT(tag nbt.Tag) error {
+	return nbt.WriteNamedTag(b.buf, tag)
 }
 
 func (b *Buffer) Reset() {
